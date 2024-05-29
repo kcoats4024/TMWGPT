@@ -45,18 +45,15 @@ st.write("Trained on Youtube Transcriptions, Website text, Guides (DTM User's Gu
 
 # Initialize chat session 
 if 'chat_history' not in st.session_state:
-    st.session_state.chat_history = []
+    st.session_state.chat_history = [{"role": "system", "parts": [{"text": document}]}]
 
 # Input and button handling
 def generate_response(user_input):
-    if not st.session_state.chat_history:
-        st.session_state.chat_history.append({"role": "user", "parts": [{"text": document}]})
-
-    # Update chat history with user input
-    st.session_state.chat_history.append({"role": "user", "parts": [{"text": user_input + " As Protocol Pro, an assistant for Triangle Microworks, please refer to and cite the provided document where applicable."}]})
+    # Update chat history with user input without custom instruction
+    st.session_state.chat_history.append({"role": "user", "parts": [{"text": user_input}]})
 
     # Truncate chat history if it exceeds context window size
-    while model.count_tokens(st.session_state.chat_history).total_tokens > context_window - 1000:
+    while len(st.session_state.chat_history) > context_window - 1000:
         st.session_state.chat_history.pop(1)  # Remove the oldest message (preserve document as first message)
 
     try:

@@ -50,14 +50,14 @@ if 'chat_history' not in st.session_state:
 # Input and button handling
 def generate_response(user_input):
     if not st.session_state.chat_history:
-        st.session_state.chat_history.append({"author": "user", "content": document})
+        st.session_state.chat_history.append({"role": "user", "parts": [{"text": document}]})
 
     # Update chat history with user input
-    st.session_state.chat_history.append({"author": "user", "content": user_input + " As Protocol Pro, an assistant for Triangle Microworks, please refer to and cite the provided document where applicable."})
+    st.session_state.chat_history.append({"role": "user", "parts": [{"text": user_input + " As Protocol Pro, an assistant for Triangle Microworks, please refer to and cite the provided document where applicable."}]})
 
     # Truncate chat history if it exceeds context window size
-    while len(st.session_state.chat_history) > context_window - 1000:
-        st.session_state.chat_history.pop(0)  # Remove the oldest message
+    while model.count_tokens(st.session_state.chat_history).total_tokens > context_window - 1000:
+        st.session_state.chat_history.pop(1)  # Remove the oldest message (preserve document as first message)
 
     try:
         # Generate response
@@ -67,7 +67,7 @@ def generate_response(user_input):
             for chunk in response:
                 response_text += chunk.text
                 
-            st.session_state.chat_history.append({"author": "model", "content": response_text})
+            st.session_state.chat_history.append({"role": "model", "parts": [{"text": response_text}]})
             st.write(f"**Protocol Pro:** {response_text}")
     except Exception as e:
         st.error(f"Error generating response: {e}")
@@ -82,7 +82,7 @@ if st.button('Send'):
 
 # Display chat history
 for message in st.session_state.chat_history[1:]:  # Skip the first message (the document)
-    if message["author"] == "user":
-        st.write(f"**You:** {message['content']}")
-    elif message["author"] == "model":  
-        st.write(f"**Protocol Pro:** {message['content']}")
+    if message["role"] == "user":
+        st.write(f"**You:** {message['parts'][0]['text']}")
+    elif message["role"] == "model":  
+        st.write(f"**Protocol Pro:** {message['parts'][0]['text']}")

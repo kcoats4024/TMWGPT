@@ -65,12 +65,8 @@ if st.button('Send') or user_input:
             {"role": "user", "parts": [{"text": user_input + " As Protocol Pro, an assistant for Triangle Microworks, please refer to and cite the provided document where applicable."}]}
         )
 
-        # Check token count and truncate history if necessary
-        while model.count_tokens(st.session_state.chat_history).total_tokens > context_window - 1000:
-            st.session_state.chat_history.pop(1)
-
         # Clear user input immediately
-        st.session_state.user_input = ""
+        st.session_state['user_input'] = ''
 
         # Stopwatch start
         start_time = time.time()

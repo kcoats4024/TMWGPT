@@ -7,7 +7,7 @@ import google.generativeai as genai
 BOLD = '\033[1m'
 RESET = '\033[0m'
 UNDERLINE = '\033[4m'
-API_KEY = "Your_API_Key_Here"  # Replace with your actual API key
+API_KEY = "AIzaSyCRoy8v1fUTAQqKx1nSeKq4SXapvvkP3Nw"  # Replace with your actual API key
 CONTEXT_WINDOW = 1048576
 DOCUMENT_PATH = 'SuperData_5-28.txt'
 

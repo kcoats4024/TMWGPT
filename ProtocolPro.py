@@ -1,25 +1,20 @@
-# app.py
 import streamlit as st
-import time
 import google.generativeai as genai
+import time
 
-# Constants
-BOLD = '\033[1m'
-RESET = '\033[0m'
-UNDERLINE = '\033[4m'
-API_KEY = KYLEGEMINIAPIKEY
-CONTEXT_WINDOW = 1048576
-DOCUMENT_PATH = 'SuperData_5-28.txt'
+# Configuration
+API_KEY = st.secrets["KYLE_GEMINI_API_KEY"]  # Use st.secrets for API key
 
-# Configure generative model
 genai.configure(api_key=API_KEY)
+
 generation_config = {
     "temperature": 0.5,
     "top_p": 0.9,
     "top_k": 50,
-    "max_output_tokens": 8192,
+    "max_output_tokens": 8192,  # Adjust as needed
     "response_mime_type": "text/plain",
 }
+
 safety_settings = [
     {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
     {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
@@ -27,7 +22,6 @@ safety_settings = [
     {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
 ]
 
-# Initialize model
 try:
     model = genai.GenerativeModel(
         model_name="gemini-1.5-pro-latest",
@@ -38,13 +32,15 @@ except Exception as e:
     st.error(f"Error initializing model: {e}")
     st.stop()
 
-# Load document
-try:
-    with open(DOCUMENT_PATH, 'r', encoding='utf-8') as file:
-        document = file.read()
-except Exception as e:
-    st.error(f"Error loading document: {e}")
-    st.stop()
+# Load your document from a text file
+with open('SuperData_5-28.txt', 'r', encoding='utf-8') as file:
+    document = file.read()
+
+# Define the context window size (adjust according to your model's specifications)
+context_window = 1048576
+
+# Initialize chat session with the document included
+chat_history = [{"role": "user", "parts": [{"text": document}]}]
 
 # Streamlit app
 st.title("AI Chat with Protocol Pro")
@@ -52,7 +48,7 @@ st.write("Start chatting with the AI. Type 'exit' to end the conversation.")
 
 # Initialize chat history
 if 'chat_history' not in st.session_state:
-    st.session_state.chat_history = [{"role": "user", "parts": [{"text": document}]}]
+    st.session_state.chat_history = chat_history
 
 user_input = st.text_input("You:", key='user_input')
 if user_input:
@@ -60,11 +56,11 @@ if user_input:
         st.stop()
 
     st.session_state.chat_history.append(
-        {"role": "user", "parts": [{"text": user_input + "As Protocol Pro, an assistant for Triangle Microworks, please refer to and cite the provided document where applicable."}]}
+        {"role": "user", "parts": [{"text": user_input + " As Protocol Pro, an assistant for Triangle Microworks, please refer to and cite the provided document where applicable."}]}
     )
 
     # Check token count and truncate history if necessary
-    while model.count_tokens(st.session_state.chat_history).total_tokens > CONTEXT_WINDOW - 1000:
+    while model.count_tokens(st.session_state.chat_history).total_tokens > context_window - 1000:
         st.session_state.chat_history.pop(1)
 
     # Stopwatch start
@@ -88,7 +84,3 @@ if user_input:
 
     # Clear user input
     st.session_state.user_input = ""
-
-# Run the Streamlit app
-if __name__ == "__main__":
-    st._run()

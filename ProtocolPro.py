@@ -56,7 +56,7 @@ if user_input:
     )
 
     # Check token count and truncate history if necessary
-    while model.count_tokens(st.session_state.chat_history).total_tokens > CONTEXT_WINDOW - 1000:
+    while model.count_tokens(st.session_state.chat_history).total_tokens > 1048576 - 1000:
         st.session_state.chat_history.pop(1)
 
     # Stopwatch start
@@ -80,6 +80,3 @@ if user_input:
 
     # Clear user input
     st.session_state.user_input = ""
-
-if __name__ == "__main__":
-    st.run()

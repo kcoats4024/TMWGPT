@@ -45,7 +45,12 @@ st.write("Trained on Youtube Transcriptions, Website text, Guides (DTM User's Gu
 
 # Initialize chat session 
 if 'chat_history' not in st.session_state:
-    st.session_state.chat_history = [{"role": "user", "parts": [{"text": document}]}]
+    st.session_state.chat_history = []
+
+# Ensure the document is included in the context but not displayed as a user message
+if 'document_included' not in st.session_state:
+    st.session_state.chat_history.append({"role": "user", "parts": [{"text": document}]})
+    st.session_state.document_included = True
 
 # Input and button handling
 def generate_response(user_input):
@@ -78,7 +83,7 @@ if st.button('Send'):
         generate_response(user_input)
 
 # Display chat history in correct order
-for message in st.session_state.chat_history:  # Iterate through all messages
+for message in st.session_state.chat_history[1:]:  # Skip the first message (the document)
     if message["role"] == "user":
         st.write(f"**You:** {message['parts'][0]['text']}")
     elif message["role"] == "model":  

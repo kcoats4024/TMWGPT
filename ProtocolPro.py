@@ -4,14 +4,13 @@ import time
 
 # Configuration
 API_KEY = st.secrets["KYLEGEMINIAPIKEY"]
-
 genai.configure(api_key=API_KEY)
 
 generation_config = {
     "temperature": 0.5,
     "top_p": 0.9,
     "top_k": 50,
-    "max_output_tokens": 8192,  # Adjust as needed
+    "max_output_tokens": 8192, 
     "response_mime_type": "text/plain",
 }
 
@@ -32,62 +31,58 @@ except Exception as e:
     st.error(f"Error initializing model: {e}")
     st.stop()
 
-# Load your document from a text file
+# Load your document
 with open('SuperData_5-28.txt', 'r', encoding='utf-8') as file:
     document = file.read()
 
-# Define the context window size (adjust according to your model's specifications)
-context_window = 1048576
+# Define context window size
+context_window = 1048576 
 
-# Initialize chat session with the document included
+# Initialize chat session
 if 'chat_history' not in st.session_state:
     st.session_state.chat_history = [{"role": "user", "parts": [{"text": document}]}]
+
+# Initialize user input
+if 'user_input' not in st.session_state:
+    st.session_state.user_input = ""
 
 # Streamlit app
 st.title("Protocol Pro")
 st.write("Trained on Youtube Transcriptions, Website text, Guides (DTM User's Guide, SDG Implementer's Guide), and Manuals. (Navigator, Test Harness, TSP, Iron)")
 
-user_input = st.text_input("You:", key='user_input')
-
-if st.session_state.get('start_time') is None:
-    st.session_state.start_time = 0
-
-if st.button('Send') or st.session_state.user_input:
+# Input and button handling
+def handle_input():
+    user_input = st.session_state.user_input
     if user_input:
         if user_input.lower() == 'exit':
-            st.write("Goodbye! Trained on Youtube Transcriptions, Website text, Guides (DTM User's Guide, SDG Implementer's Guide), and Manuals. (Navigator, Test Harness, TSP, Iron)")
+            st.write("Goodbye!")
             st.stop()
 
-        # Add user input to chat history
+        # Update chat history
         st.session_state.chat_history.append(
             {"role": "user", "parts": [{"text": user_input + " As Protocol Pro, an assistant for Triangle Microworks, please refer to and cite the provided document where applicable."}]}
         )
 
-        # Check token count and truncate history if necessary
+        # Token counting and truncation
         while model.count_tokens(st.session_state.chat_history).total_tokens > context_window - 1000:
             st.session_state.chat_history.pop(1)
 
-        # Stopwatch start
-        start_time = time.time()
-        st.session_state.start_time = start_time
-
         # Generate response
-        response = model.generate_content(st.session_state.chat_history, stream=True)
-        response_text = ""
+        try:
+            with st.spinner("Generating response..."):
+                response = model.generate_content(st.session_state.chat_history, stream=True)
+                response_text = ""
+                for chunk in response:
+                    response_text += chunk.text
+                st.write(f"**Protocol Pro:** {response_text}")
+        except Exception as e:
+            st.error(f"Error generating response: {e}")
 
-        for chunk in response:
-            response_text += chunk.text
-
-        # Stopwatch end
-        end_time = time.time()
-        response_time = end_time - st.session_state.start_time
-
-        st.write(f"**Protocol Pro:** {response_text}")
-        st.write(f"_Response time: {response_time:.2f} seconds_")
-
-        # Update chat history with the model's response
+        # Update chat history with response
         st.session_state.chat_history.append({"role": "model", "parts": [{"text": response_text}]})
 
-        # Clear user input
-        st.session_state['user_input'] = ""  # Update using this method
-        st.experimental_rerun()
+user_input = st.text_area("You:", value=st.session_state.user_input, key='user_input')
+
+if st.button('Send'):
+    handle_input()
+    st.session_state.user_input = "" 

@@ -29,7 +29,7 @@ try:
         generation_config=generation_config,
     )
 except Exception as e:
-    st.error(f"Error initializing model: {e}")
+    st.write(f"Error initializing model: {e}")
     st.stop()
 
 # Load your document
@@ -37,10 +37,10 @@ try:
     with open('SuperData_5-28.txt', 'r', encoding='utf-8') as file:
         document = file.read()
 except FileNotFoundError:
-    st.error("Document not found. Please ensure 'SuperData_5-28.txt' exists.")
+    st.write("Document not found. Please ensure 'SuperData_5-28.txt' exists.")
     st.stop()
 except Exception as e:
-    st.error(f"An error occurred while reading the document: {e}")
+    st.write(f"An error occurred while reading the document: {e}")
     st.stop()
 
 # Define context window size
@@ -76,7 +76,7 @@ def generate_response(user_input):
                 
             st.session_state.chat_history.append({"role": "model", "parts": [{"text": response_text}]})
     except Exception as e:
-        st.error(f"Error generating response: {e}")
+        st.write(f"Error generating response: {e}")
 
 # Input text area 
 user_input = st.text_area("You:")

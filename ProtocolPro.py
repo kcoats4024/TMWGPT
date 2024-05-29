@@ -21,6 +21,7 @@ safety_settings = [
     {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
 ]
 
+# Initialize model
 try:
     model = genai.GenerativeModel(
         model_name="gemini-1.5-pro-latest",
@@ -51,19 +52,45 @@ st.title("Protocol Pro")
 st.write("Trained on Youtube Transcriptions, Website text, Guides (DTM User's Guide, SDG Implementer's Guide), and Manuals. (Navigator, Test Harness, TSP, Iron)")
 
 # Input and button handling
-def handle_input(user_input):  
+def handle_input():  
     # Update chat history
     st.session_state.chat_history.append(
-        {"role": "user", "parts": [{"text": user_input + " As Protocol Pro, an assistant for Triangle Microworks, please refer to and cite the provided document where applicable."}]}
+        {"role": "user", "parts": [{"text": st.session_state.user_input + " As Protocol Pro, an assistant for Triangle Microworks, please refer to and cite the provided document where applicable."}]}
     )
-    # ... (rest of your response generation logic)
 
-user_input = st.text_area("You:", value=st.session_state.user_input, key='user_input')
+    # Token counting and truncation
+    while model.count_tokens(st.session_state.chat_history).total_tokens > context_window - 1000:
+        st.session_state.chat_history.pop(1)
 
-if st.button('Send'):
-    if st.session_state.user_input != "":  # Check if input is not empty
-        handle_input(st.session_state.user_input)
-        st.session_state.user_input = ""  # Clear input after handling
+    # Generate response
+    try:
+        with st.spinner("Generating response..."):
+            response = model.generate_content(st.session_state.chat_history, stream=True)
+            response_text = ""
+            for chunk in response:
+                response_text += chunk.text
+            st.write(f"**Protocol Pro:** {response_text}")
+    except Exception as e:
+        st.error(f"Error generating response: {e}")
 
+    # Update chat history with response
+    st.session_state.chat_history.append({"role": "model", "parts": [{"text": response_text}]})
 
+    # Clear input after handling (Use callback mechanism)
+    def clear_input():
+        st.session_state['user_input'] = ""
+    st.experimental_set_query_params(clear_input=True)  
 
+# Input text area with on_change callback
+user_input = st.text_area("You:", value=st.session_state.user_input, key='user_input', on_change=handle_input)  
+
+if st.experimental_get_query_params().get("clear_input"):
+    st.session_state['user_input'] = ""
+    st.experimental_set_query_params()
+
+# Display chat history
+for message in st.session_state.chat_history:
+    if message["role"] == "user":
+        st.write(f"**You:** {message['parts'][0]['text']}")
+    else:
+        st.write(f"**Protocol Pro:** {message['parts'][0]['text']}")

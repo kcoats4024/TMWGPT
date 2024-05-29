@@ -50,7 +50,7 @@ if 'chat_history' not in st.session_state:
 # Input and button handling
 def generate_response(user_input):
     # Update chat history with user input
-    st.session_state.chat_history.append({"role": "user", "parts": [{"text": user_input}]})
+    st.session_state.chat_history.append({"role": "user", "parts": [{"text": user_input + "As Protocol Pro, an assistant for Triangle Microworks, please refer to and cite the provided document where applicable."}]})
 
     # Truncate chat history if it exceeds context window size
     while model.count_tokens(st.session_state.chat_history).total_tokens > context_window - 1000:

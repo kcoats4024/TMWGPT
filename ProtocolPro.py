@@ -45,16 +45,11 @@ st.write("Trained on Youtube Transcriptions, Website text, Guides (DTM User's Gu
 
 # Initialize chat session 
 if 'chat_history' not in st.session_state:
-    st.session_state.chat_history = []
-
-# Ensure the document is included in the context but not displayed as a user message
-if 'document_included' not in st.session_state:
-    st.session_state.chat_history.append({"role": "user", "parts": [{"text": document}]})
-    st.session_state.document_included = True
+    st.session_state.chat_history = [{"role": "user", "parts": [{"text": document}]}]
 
 # Input and button handling
 def generate_response(user_input):
-    # Update chat history with user input without custom instruction
+    # Update chat history with user input
     st.session_state.chat_history.append({"role": "user", "parts": [{"text": user_input}]})
 
     # Truncate chat history if it exceeds context window size
@@ -70,7 +65,6 @@ def generate_response(user_input):
                 response_text += chunk.text
                 
             st.session_state.chat_history.append({"role": "model", "parts": [{"text": response_text}]})
-            st.write(f"**Protocol Pro:** {response_text}")
     except Exception as e:
         st.error(f"Error generating response: {e}")
 
@@ -83,7 +77,7 @@ if st.button('Send'):
         generate_response(user_input)
 
 # Display chat history in correct order
-for message in st.session_state.chat_history[1:]:  # Skip the first message (the document)
+for message in st.session_state.chat_history:
     if message["role"] == "user":
         st.write(f"**You:** {message['parts'][0]['text']}")
     elif message["role"] == "model":  

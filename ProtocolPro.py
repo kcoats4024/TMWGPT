@@ -89,5 +89,5 @@ if st.button('Send') or st.session_state.user_input:
         st.session_state.chat_history.append({"role": "model", "parts": [{"text": response_text}]})
 
         # Clear user input
-        st.session_state.user_input = ""
+        st.session_state['user_input'] = ""  # Update using this method
         st.experimental_rerun()

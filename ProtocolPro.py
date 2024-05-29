@@ -3,7 +3,7 @@ import google.generativeai as genai
 import time
 
 # Configuration
-API_KEY = st.secrets["KYLEGEMINIAPIKEY"]  # Use st.secrets for API key
+API_KEY = st.secrets["KYLE_GEMINI_API_KEY"]
 
 genai.configure(api_key=API_KEY)
 
@@ -80,6 +80,7 @@ if user_input:
     st.write(f"**Protocol Pro:** {response_text}")
     st.write(f"_Response time: {response_time:.2f} seconds_")
 
+    # Update chat history with the model's response
     st.session_state.chat_history.append({"role": "model", "parts": [{"text": response_text}]})
 
     # Clear user input

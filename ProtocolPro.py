@@ -53,9 +53,11 @@ st.write("Trained on Youtube Transcriptions, Website text, Guides (DTM User's Gu
 # Initialize chat session 
 if 'chat_history' not in st.session_state:
     print("Initializing chat history")  # Debugging statement
+    st.write("Initializing Chat History")
     st.session_state.chat_history = [{"role": "user", "parts": [{"text": document}]}]
 else:
     print("Chat history already initialized")  # Debugging statement
+    st.write("Chat History Already Initialized")
 
 # Input and button handling
 def generate_response(user_input):

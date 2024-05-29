@@ -3,7 +3,7 @@ import google.generativeai as genai
 import time
 
 # Configuration
-API_KEY = st.secrets["KYLE_GEMINI_API_KEY"]
+API_KEY = st.secrets["KYLEGEMINIAPIKEY"]
 
 genai.configure(api_key=API_KEY)
 

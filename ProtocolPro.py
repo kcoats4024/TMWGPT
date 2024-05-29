@@ -11,7 +11,7 @@ generation_config = {
     "temperature": 0.5,
     "top_p": 0.9,
     "top_k": 50,
-    "max_output_tokens": 8192,  # Adjust as needed
+    "max_output_tokens": 8192,
     "response_mime_type": "text/plain",
 }
 
@@ -32,7 +32,7 @@ except Exception as e:
     st.error(f"Error initializing model: {e}")
     st.stop()
 
-# Load your document from a text file
+# Load document
 try:
     with open('SuperData_5-28.txt', 'r', encoding='utf-8') as file:
         document = file.read()
@@ -40,19 +40,21 @@ except Exception as e:
     st.error(f"Error loading document: {e}")
     st.stop()
 
-# Define the context window size (adjust according to your model's specifications)
-context_window = 1048576
-
-# Initialize chat session with the document included
+# Initialize session state
 if 'chat_history' not in st.session_state:
     st.session_state.chat_history = [{"role": "user", "parts": [{"text": document}]}]
+if 'user_input' not in st.session_state:
+    st.session_state.user_input = ''
 
-# Streamlit app
+# App title and description
 st.title("Protocol Pro")
 st.write("Trained on Youtube Transcriptions, Website text, Guides (DTM User's Guide, SDG Implementer's Guide), and Manuals. (Navigator, Test Harness, TSP, Iron)")
 st.write("Start chatting with the AI. Type 'exit' to end the conversation.")
 
-user_input = st.text_input("You:", key='user_input')
+def clear_input():
+    st.session_state.user_input = ''
+
+user_input = st.text_input("You:", key='user_input', on_change=clear_input)
 
 if st.button('Send') or user_input:
     if user_input:
@@ -60,32 +62,22 @@ if st.button('Send') or user_input:
             st.write("Goodbye! Trained on Youtube Transcriptions, Website text, Guides (DTM User's Guide, SDG Implementer's Guide), and Manuals. (Navigator, Test Harness, TSP, Iron)")
             st.stop()
 
-        # Add user input to chat history
         st.session_state.chat_history.append(
             {"role": "user", "parts": [{"text": user_input + " As Protocol Pro, an assistant for Triangle Microworks, please refer to and cite the provided document where applicable."}]}
         )
 
-        # Clear user input immediately
-        st.session_state['user_input'] = ''
-
-        # Stopwatch start
         start_time = time.time()
 
-        # Generate response
         response = model.generate_content(st.session_state.chat_history, stream=True)
         response_text = ""
-
         for chunk in response:
             response_text += chunk.text
-            st.write(chunk.text)  # Stream each chunk
+            st.write(chunk.text)
 
-        # Stopwatch end
         end_time = time.time()
         response_time = end_time - start_time
+        st.write(f"Response time: {response_time:.2f} seconds")
 
-        st.write(f"**Protocol Pro:** {response_text}")
-        st.write(f"_Response time: {response_time:.2f} seconds_")
-
-        # Update chat history with the model's response
         st.session_state.chat_history.append({"role": "model", "parts": [{"text": response_text}]})
 
+        st.experimental_rerun()

@@ -45,12 +45,14 @@ if 'chat_history' not in st.session_state:
 
 # Streamlit app
 st.title("Protocol Pro")
-st.write("Start chatting with the AI. Type 'exit' to end the conversation.")
 st.write("Trained on Youtube Transcriptions, Website text, Guides (DTM User's Guide, SDG Implementer's Guide), and Manuals. (Navigator, Test Harness, TSP, Iron)")
 
 user_input = st.text_input("You:", key='user_input')
 
-if st.button('Send'):
+if st.session_state.get('start_time') is None:
+    st.session_state.start_time = 0
+
+if st.button('Send') or st.session_state.user_input:
     if user_input:
         if user_input.lower() == 'exit':
             st.write("Goodbye! Trained on Youtube Transcriptions, Website text, Guides (DTM User's Guide, SDG Implementer's Guide), and Manuals. (Navigator, Test Harness, TSP, Iron)")
@@ -67,6 +69,7 @@ if st.button('Send'):
 
         # Stopwatch start
         start_time = time.time()
+        st.session_state.start_time = start_time
 
         # Generate response
         response = model.generate_content(st.session_state.chat_history, stream=True)
@@ -77,7 +80,7 @@ if st.button('Send'):
 
         # Stopwatch end
         end_time = time.time()
-        response_time = end_time - start_time
+        response_time = end_time - st.session_state.start_time
 
         st.write(f"**Protocol Pro:** {response_text}")
         st.write(f"_Response time: {response_time:.2f} seconds_")
@@ -87,4 +90,4 @@ if st.button('Send'):
 
         # Clear user input
         st.session_state.user_input = ""
-
+        st.experimental_rerun()

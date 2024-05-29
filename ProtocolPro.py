@@ -77,7 +77,7 @@ if st.button('Send'):
         generate_response(user_input)
 
 # Display chat history in correct order
-for message in st.session_state.chat_history:
+for message in st.session_state.chat_history[1:]:
     if message["role"] == "user":
         st.write(f"**You:** {message['parts'][0]['text']}")
     elif message["role"] == "model":  

@@ -36,7 +36,6 @@ except Exception as e:
 try:
     with open('SuperData_5-28.txt', 'r', encoding='utf-8') as file:
         document = file.read()
-        print("Document content:", document)  # Debugging statement
 except FileNotFoundError:
     st.error("Document not found. Please ensure 'SuperData_5-28.txt' exists.")
     st.stop()
@@ -61,7 +60,7 @@ else:
 # Input and button handling
 def generate_response(user_input):
     # Update chat history with user input
-    st.session_state.chat_history.append({"role": "user", "parts": [{"text": user_input + " As Protocol Pro, an assistant for Triangle Microworks, please refer to and cite the provided document where applicable."}]})
+    st.session_state.chat_history.append({"role": "user", "parts": [{"text": user_input + "As Protocol Pro, an assistant for Triangle Microworks, please refer to and cite the provided document where applicable."}]})
 
     # Truncate chat history if it exceeds context window size
     while model.count_tokens(st.session_state.chat_history).total_tokens > context_window - 1000:
@@ -86,8 +85,6 @@ user_input = st.text_area("You:")
 if st.button('Send'):
     if user_input:  # Check if input is not empty
         generate_response(user_input)
-    else:
-        st.error("Please enter a message before sending.")
 
 # Display chat history in correct order
 for message in st.session_state.chat_history[1:]:

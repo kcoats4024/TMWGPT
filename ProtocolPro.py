@@ -10,7 +10,7 @@ generation_config = {
     "temperature": 0.5,
     "top_p": 0.9,
     "top_k": 50,
-    "max_output_tokens": 8192, 
+    "max_output_tokens": 8192,
     "response_mime_type": "text/plain",
 }
 
@@ -55,17 +55,17 @@ def generate_response(user_input):
     # Update chat history with user input
     st.session_state.chat_history.append({"author": "user", "content": user_input + " As Protocol Pro, an assistant for Triangle Microworks, please refer to and cite the provided document where applicable."})
 
-    # Token counting and truncation
-    while model.count_message_tokens(st.session_state.chat_history) > context_window - 1000:
+    # Truncate chat history if it exceeds context window size
+    while len(st.session_state.chat_history) > context_window - 1000:
         st.session_state.chat_history.pop(0)  # Remove the oldest message
 
     try:
         # Generate response
         with st.spinner("Generating response..."):
-            response = model.generate_chat(st.session_state.chat_history)
+            response = model.generate_content(st.session_state.chat_history, stream=True)
             response_text = ""
-            for candidate in response.candidates:
-                response_text = candidate.content
+            for chunk in response:
+                response_text += chunk.text
                 
             st.session_state.chat_history.append({"author": "model", "content": response_text})
             st.write(f"**Protocol Pro:** {response_text}")

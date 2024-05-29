@@ -47,14 +47,12 @@ if 'chat_history' not in st.session_state:
 st.title("Protocol Pro")
 st.write("Trained on Youtube Transcriptions, Website text, Guides (DTM User's Guide, SDG Implementer's Guide), and Manuals. (Navigator, Test Harness, TSP, Iron)")
 
-user_input = st.text_input("You:", key='user_input')
+# User input
+user_input = st.text_input("You:", key="user_input", on_change=lambda: st.session_state.update({"user_input_submitted": True}))
 
-if st.session_state.get('start_time') is None:
-    st.session_state.start_time = 0
-
-if st.button('Send') or st.session_state.user_input:
+if st.session_state.get("user_input_submitted"):
     if user_input:
-        if user_input.lower() == 'exit':
+        if user_input.lower() == "exit":
             st.write("Goodbye! Trained on Youtube Transcriptions, Website text, Guides (DTM User's Guide, SDG Implementer's Guide), and Manuals. (Navigator, Test Harness, TSP, Iron)")
             st.stop()
 
@@ -71,12 +69,14 @@ if st.button('Send') or st.session_state.user_input:
         start_time = time.time()
         st.session_state.start_time = start_time
 
-        # Generate response
-        response = model.generate_content(st.session_state.chat_history, stream=True)
-        response_text = ""
+        # Show that the model is processing
+        with st.spinner("Protocol Pro is thinking..."):
+            # Generate response
+            response = model.generate_content(st.session_state.chat_history, stream=True)
+            response_text = ""
 
-        for chunk in response:
-            response_text += chunk.text
+            for chunk in response:
+                response_text += chunk.text
 
         # Stopwatch end
         end_time = time.time()
@@ -90,4 +90,7 @@ if st.button('Send') or st.session_state.user_input:
 
         # Clear user input
         st.session_state.user_input = ""
-        st.experimental_rerun()
+        st.session_state.user_input_submitted = False
+
+    # Rerun the app to clear the input field
+    st.experimental_rerun()

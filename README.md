@@ -19,4 +19,4 @@ input box at bottom of screen and auto downscroll
 
 model actually know about document?
 
-custom instructions with document or (pre)(ap)pended with input
+custom instructions with document or (pre)(ap)pended with input without showing up in history

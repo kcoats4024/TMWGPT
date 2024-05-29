@@ -36,9 +36,9 @@ with open('SuperData_5-28.txt', 'r', encoding='utf-8') as file:
     document = file.read()
 
 # Define context window size
-context_window = 1048576 
+context_window = 1048576
 
-# Initialize chat session
+# Initialize chat session (Ensure 'user' is the first role for initial message)
 if 'chat_history' not in st.session_state:
     st.session_state.chat_history = [{"role": "user", "parts": [{"text": document}]}]
 
@@ -51,38 +51,19 @@ st.title("Protocol Pro")
 st.write("Trained on Youtube Transcriptions, Website text, Guides (DTM User's Guide, SDG Implementer's Guide), and Manuals. (Navigator, Test Harness, TSP, Iron)")
 
 # Input and button handling
-def handle_input():
-    user_input = st.session_state.user_input
-    if user_input:
-        if user_input.lower() == 'exit':
-            st.write("Goodbye!")
-            st.stop()
-
-        # Update chat history
-        st.session_state.chat_history.append(
-            {"role": "user", "parts": [{"text": user_input + " As Protocol Pro, an assistant for Triangle Microworks, please refer to and cite the provided document where applicable."}]}
-        )
-
-        # Token counting and truncation
-        while model.count_tokens(st.session_state.chat_history).total_tokens > context_window - 1000:
-            st.session_state.chat_history.pop(1)
-
-        # Generate response
-        try:
-            with st.spinner("Generating response..."):
-                response = model.generate_content(st.session_state.chat_history, stream=True)
-                response_text = ""
-                for chunk in response:
-                    response_text += chunk.text
-                st.write(f"**Protocol Pro:** {response_text}")
-        except Exception as e:
-            st.error(f"Error generating response: {e}")
-
-        # Update chat history with response
-        st.session_state.chat_history.append({"role": "model", "parts": [{"text": response_text}]})
+def handle_input(user_input):  
+    # Update chat history
+    st.session_state.chat_history.append(
+        {"role": "user", "parts": [{"text": user_input + " As Protocol Pro, an assistant for Triangle Microworks, please refer to and cite the provided document where applicable."}]}
+    )
+    # ... (rest of your response generation logic)
 
 user_input = st.text_area("You:", value=st.session_state.user_input, key='user_input')
 
 if st.button('Send'):
-    handle_input()
-    st.session_state.user_input = "" 
+    if st.session_state.user_input != "":  # Check if input is not empty
+        handle_input(st.session_state.user_input)
+        st.session_state.user_input = ""  # Clear input after handling
+
+
+

@@ -77,8 +77,8 @@ if st.button('Send'):
     if user_input:  # Check if input is not empty
         generate_response(user_input)
 
-# Display chat history
-for message in st.session_state.chat_history[1:]:  # Skip the first message (the document)
+# Display chat history in correct order
+for message in st.session_state.chat_history:  # Iterate through all messages
     if message["role"] == "user":
         st.write(f"**You:** {message['parts'][0]['text']}")
     elif message["role"] == "model":  

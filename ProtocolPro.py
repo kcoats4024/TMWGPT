@@ -41,7 +41,7 @@ context_window = 1048576
 
 # Streamlit app
 st.title("Protocol Pro")
-st.write("Trained on Youtube Transcriptions, Website text, Guides (DTM User's Guide, SDG Implementer's Guide), and Manuals. (Navigator, Test Harness, TSP, Iron)")
+st.write("Trained on Youtube Transcriptions, Website text, Guides (DTM User's Guide, SDG Implementer's Guide), and Manuals (Navigator, Test Harness, TSP, Iron).")
 
 # Initialize chat session 
 if 'chat_history' not in st.session_state:

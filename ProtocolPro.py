@@ -1,6 +1,11 @@
-import streamlit as st
+import os
 import google.generativeai as genai
+import streamlit as st
 import time
+
+BOLD = '\033[1m'
+RESET = '\033[0m'
+UNDERLINE = '\033[4m'
 
 # Configuration
 API_KEY = st.secrets["KYLEGEMINIAPIKEY"]
@@ -10,7 +15,7 @@ generation_config = {
     "temperature": 0.5,
     "top_p": 0.9,
     "top_k": 50,
-    "max_output_tokens": 8192,
+    "max_output_tokens": 8192,  # Adjust as needed
     "response_mime_type": "text/plain",
 }
 
@@ -21,7 +26,6 @@ safety_settings = [
     {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
 ]
 
-# Initialize model
 try:
     model = genai.GenerativeModel(
         model_name="gemini-1.5-pro-latest",
@@ -32,25 +36,21 @@ except Exception as e:
     st.error(f"Error initializing model: {e}")
     st.stop()
 
-# Load your document
+# Load your document from a text file
 with open('SuperData_5-28.txt', 'r', encoding='utf-8') as file:
     document = file.read()
 
-# Define context window size
-context_window = 1048576 
+# Define the context window size (adjust according to your model's specifications)
+context_window = 1048576
 
-# Streamlit app
-st.title("Protocol Pro")
-st.write("Trained on Youtube Transcriptions, Website text, Guides (DTM User's Guide, SDG Implementer's Guide), and Manuals (Navigator, Test Harness, TSP, Iron).")
-
-# Initialize chat session 
+# Initialize chat session with the document included
 if 'chat_history' not in st.session_state:
-    st.session_state.chat_history = [{"role": "user", "parts": [{"text": document}]}]
+    st.session_state.chat_history = [{"role": "system", "parts": [{"text": document}]}]
 
 # Input and button handling
 def generate_response(user_input):
-    # Update chat history with user input
-    st.session_state.chat_history.append({"role": "user", "parts": [{"text": user_input + "As Protocol Pro, an assistant for Triangle Microworks, please refer to and cite the provided document where applicable."}]})
+    # Append only user input to the chat history
+    st.session_state.chat_history.append({"role": "user", "parts": [{"text": user_input}]})
 
     # Truncate chat history if it exceeds context window size
     while model.count_tokens(st.session_state.chat_history).total_tokens > context_window - 1000:
@@ -63,12 +63,13 @@ def generate_response(user_input):
             response_text = ""
             for chunk in response:
                 response_text += chunk.text
-                
+
             st.session_state.chat_history.append({"role": "model", "parts": [{"text": response_text}]})
+            st.write(f"**Protocol Pro:** {response_text}")
     except Exception as e:
         st.error(f"Error generating response: {e}")
 
-# Input text area 
+# Input text area
 user_input = st.text_area("You:")
 
 # Button to trigger input handling
@@ -77,7 +78,7 @@ if st.button('Send'):
         generate_response(user_input)
 
 # Display chat history in correct order
-for message in st.session_state.chat_history[1:]:
+for message in st.session_state.chat_history[1:]:  # Skip the first message (the document)
     if message["role"] == "user":
         st.write(f"**You:** {message['parts'][0]['text']}")
     elif message["role"] == "model":  

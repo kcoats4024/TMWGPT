@@ -16,7 +16,7 @@ with open('SuperData_5-28.txt', 'r', encoding='utf-8') as file:
 context_window = 1048576 
 
 # Get the encoding for Gemini
-encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")  
+encoding = tiktoken.encoding_for_model("gemini-1.5-pro")  
 
 # Streamlit app
 st.title("Protocol Pro")

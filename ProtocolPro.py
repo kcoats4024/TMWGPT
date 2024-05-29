@@ -45,7 +45,7 @@ st.write("Trained on Youtube Transcriptions, Website text, Guides (DTM User's Gu
 
 # Initialize chat session 
 if 'chat_history' not in st.session_state:
-    st.session_state.chat_history = [{"role": "system", "parts": [{"text": document}]}]
+    st.session_state.chat_history = [{"role": "user", "parts": [{"text": document}]}]
 
 # Input and button handling
 def generate_response(user_input):
@@ -53,7 +53,7 @@ def generate_response(user_input):
     st.session_state.chat_history.append({"role": "user", "parts": [{"text": user_input}]})
 
     # Truncate chat history if it exceeds context window size
-    while len(st.session_state.chat_history) > context_window - 1000:
+    while model.count_tokens(st.session_state.chat_history).total_tokens > context_window - 1000:
         st.session_state.chat_history.pop(1)  # Remove the oldest message (preserve document as first message)
 
     try:

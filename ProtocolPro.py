@@ -2,7 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 import time
 
-# Configuration (Replace 'YOUR_API_KEY' with your actual API key)
+# Configuration
 API_KEY = st.secrets["KYLEGEMINIAPIKEY"]
 genai.configure(api_key=API_KEY)
 
@@ -43,59 +43,49 @@ context_window = 1048576
 st.title("Protocol Pro")
 st.write("Trained on Youtube Transcriptions, Website text, Guides (DTM User's Guide, SDG Implementer's Guide), and Manuals. (Navigator, Test Harness, TSP, Iron)")
 
-# Initialize chat session ONLY after the first user message
+# Initialize chat session 
 if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
 
-# Initialize user input
-if 'user_input' not in st.session_state:
-    st.session_state.user_input = ""
 
 # Input and button handling
-def handle_input():
-    if not st.session_state.chat_history:  # Check if it's the first message
-        st.session_state.chat_history.append({"role": "user", "parts": [{"text": document}]})  # Add the document
-        
+def generate_response(user_input):
+    if not st.session_state.chat_history:
+        st.session_state.chat_history.append({"role": "user", "content": document}) 
+    
     # Update chat history with user input
-    st.session_state.chat_history.append(
-        {"role": "user", "parts": [{"text": st.session_state.user_input + " As Protocol Pro, an assistant for Triangle Microworks, please refer to and cite the provided document where applicable."}]}
-    )
+    st.session_state.chat_history.append({"role": "user", "content": user_input + " As Protocol Pro, an assistant for Triangle Microworks, please refer to and cite the provided document where applicable."})
 
     # Token counting and truncation
     while model.count_tokens(st.session_state.chat_history).total_tokens > context_window - 1000:
-        st.session_state.chat_history.pop(1)
+        st.session_state.chat_history.pop(0)  # Remove the oldest message
 
-    # Generate response
     try:
+        # Generate response
         with st.spinner("Generating response..."):
-            response = model.generate_content(st.session_state.chat_history, stream=True)
+            response = model.generate_chat(st.session_state.chat_history, stream=True)
             response_text = ""
             for chunk in response:
-                response_text += chunk.text
+                response_text += chunk.content
+            st.session_state.chat_history.append({"role": "assistant", "content": response_text})
             st.write(f"**Protocol Pro:** {response_text}")
     except Exception as e:
         st.error(f"Error generating response: {e}")
 
-    # Update chat history with response
-    st.session_state.chat_history.append({"role": "model", "parts": [{"text": response_text}]})
-    
-    # Clear input after handling (Use callback mechanism)
-    def clear_input():
-        st.session_state['user_input'] = ""
-    st.experimental_set_query_params(clear_input=True) 
 
-# Input text area with on_change callback
-user_input = st.text_area("You:", value=st.session_state.user_input, key='user_input', on_change=handle_input)  
+# Input text area 
+user_input = st.text_area("You:")
 
-if st.experimental_get_query_params().get("clear_input"):
-    st.session_state['user_input'] = ""
-    st.experimental_set_query_params()
+# Button to trigger input handling
+if st.button('Send'):
+    if user_input:  # Check if input is not empty
+        generate_response(user_input)
 
-# Display chat history ONLY when it's not empty
-if st.session_state.chat_history:
-    for message in st.session_state.chat_history:
-        if message["role"] == "user":
-            st.write(f"**You:** {message['parts'][0]['text']}")
-        else:
-            st.write(f"**Protocol Pro:** {message['parts'][0]['text']}")
+# Display chat history
+for message in st.session_state.chat_history[1:]:  # Skip the first message (the document)
+    if message["role"] == "user":
+        st.write(f"**You:** {message['content']}")
+    elif message["role"] == "assistant":  
+        st.write(f"**Protocol Pro:** {message['content']}")
+
 

@@ -33,8 +33,15 @@ except Exception as e:
     st.stop()
 
 # Load your document
-with open('SuperData_5-28.txt', 'r', encoding='utf-8') as file:
-    document = file.read()
+try:
+    with open('SuperData_5-28.txt', 'r', encoding='utf-8') as file:
+        document = file.read()
+except FileNotFoundError:
+    st.error("Document not found. Please ensure 'SuperData_5-28.txt' exists.")
+    st.stop()
+except Exception as e:
+    st.error(f"An error occurred while reading the document: {e}")
+    st.stop()
 
 # Define context window size
 context_window = 1048576 
@@ -45,7 +52,10 @@ st.write("Trained on Youtube Transcriptions, Website text, Guides (DTM User's Gu
 
 # Initialize chat session 
 if 'chat_history' not in st.session_state:
+    print("Initializing chat history")  # Debugging statement
     st.session_state.chat_history = [{"role": "user", "parts": [{"text": document}]}]
+else:
+    print("Chat history already initialized")  # Debugging statement
 
 # Input and button handling
 def generate_response(user_input):

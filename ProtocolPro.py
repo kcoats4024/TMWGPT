@@ -57,24 +57,25 @@ def clear_input():
 
 user_input = st.text_input("You:", key='user_input', on_change=clear_input)
 
-if st.button('Send') or st.session_state.user_input:
-    if st.session_state.user_input:
-        if st.session_state.user_input.lower() == 'exit':
+if st.button('Send') or user_input:
+    if user_input:
+        if user_input.lower() == 'exit':
             st.write("Goodbye! Trained on Youtube Transcriptions, Website text, Guides (DTM User's Guide, SDG Implementer's Guide), and Manuals. (Navigator, Test Harness, TSP, Iron)")
             st.stop()
 
         st.session_state.chat_history.append(
-            {"role": "user", "parts": [{"text": st.session_state.user_input + " As Protocol Pro, an assistant for Triangle Microworks, please refer to and cite the provided document where applicable."}]}
+            {"role": "user", "parts": [{"text": user_input + " As Protocol Pro, an assistant for Triangle Microworks, please refer to and cite the provided document where applicable."}]}
         )
 
         start_time = time.time()
 
-        # Generate response
-        response = model.generate_content(st.session_state.chat_history, stream=True)
-        response_text = ""
-        for chunk in response:
-            response_text += chunk.text
-            st.write(chunk.text)  # Stream each chunk
+        # Display waiting spinner
+        with st.spinner("Protocol Pro is generating a response..."):
+            response = model.generate_content(st.session_state.chat_history, stream=True)
+            response_text = ""
+            for chunk in response:
+                response_text += chunk.text
+                st.write(chunk.text)
 
         end_time = time.time()
         response_time = end_time - start_time
@@ -83,4 +84,4 @@ if st.button('Send') or st.session_state.user_input:
         st.session_state.chat_history.append({"role": "model", "parts": [{"text": response_text}]})
 
         st.session_state.user_input = ''  # Clear input after processing
-        st.experimental_rerun()
+

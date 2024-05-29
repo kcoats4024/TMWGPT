@@ -1,8 +1,8 @@
 # TMWGPT
 
 LIST:
-Get rid of text after pressing send/ctrl enter
-stopwatch
+-Get rid of text after pressing send/ctrl enter
+-stopwatch
 clearer boundaries between messages
 protocol pro in center
 custom instructions
